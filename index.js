@@ -6,24 +6,50 @@ const customPrompt = (inputText) => {
     return prompt();
 };
 
-
-
-// Your code goes here
-const menu = () => {
-    switch (customPrompt("1: Start the quiz\n2: Infinite Mode\n3: Exit:")) {
-        case "1":
-            startLevelQuiz();
-            break;
-        case "2":
-            startInfiniteQuiz();
-            break;
-        case "3":
+const inputControl = (readableString) => {
+    console.log(readableString);
+    var options = readableString.match(/\d+/g).map(Number);
+    console.log(options);
+    let choice = Number(prompt());
+    let exitOption = readableString.match(/(\d+): EXIT/);
+    return new Promise((resolve, reject) => {
+        if (exitOption && choice === Number(exitOption[1])) {
+            console.log("Exiting...");
             process.exit(0);
-        default:
-            console.log("Invalid input. Please try again.");
+        }
+        if (!options.includes(choice)) {
+            reject("Invalid input. Try again.");
+        }
+        resolve(choice);
+    });
+};
+
+/*
+const string = "b12345hola";
+const [match] = string.match(/(\d+)/);
+match; // 12345
+*/
+
+const menu = () => {
+    inputControl(
+        "1: START THE QUIZ: LEVEL MODE\n2: START THE QUIZ : INFINITE MODE\n3: EXIT:"
+    )
+        .then((choice) => {
+            switch (choice) {
+                case 1:
+                    startLevelQuiz();
+                    break;
+                case 2:
+                    startInfiniteQuiz();
+                    break;
+                case "3":
+                    process.exit(0);
+            }
+        })
+        .catch((error) => {
+            console.log(error);
             menu();
-            break;
-    }
+        });
 };
 
 let operators = ["+", "-", "*", "/"];
@@ -48,20 +74,24 @@ const makeQuiz = (difficulty) => {
     let questionObj = Object.create(MathQuestion);
     let question = questionObj.fullQuestion(difficulty);
 
-    while (eval(question) === parseInt(customPrompt(question))) {
-        question = questionObj.fullQuestion(difficulty);
-    }
+    try {
+        while (eval(question) === parseInt(customPrompt(question))) {
+            question = questionObj.fullQuestion(difficulty);
+        }
+    } catch {}
     console.log("WRONG!");
     menu();
 };
 
 const startLevelQuiz = () => {
-    makeQuiz(Math.pow(10,customPrompt("Difficulty level:\n1: EASY\n 2: MEDIUM \n 3: HARD")))
-}
-
-
-
-
-
+    inputControl("Difficulty level:\n1: EASY\n2: MEDIUM\n3: HARD\n 4:EXIT")
+        .then((level) => {
+            makeQuiz(Math.pow(10, level));
+        })
+        .catch((error) => {
+            console.log(error);
+            startLevelQuiz();
+        });
+};
 
 menu();
