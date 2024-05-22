@@ -6,16 +6,16 @@ const customPrompt = (inputText) => {
     return prompt();
 };
 
-const inputControl = (readableString) => {
-    console.log(readableString);
-    var options = readableString.match(/\d+/g).map(Number);
-    console.log(options);
-    let choice = Number(prompt());
-    let exitOption = readableString.match(/(\d+): EXIT/);
+const inputControl = (readableString, exitOption, prev) => {
     return new Promise((resolve, reject) => {
-        if (exitOption && choice === Number(exitOption[1])) {
+        //console.log(readableString);
+        let choice = Number(customPrompt(readableString));
+        var options = readableString.match(/\d+/g).map(Number);
+        
+        if (choice === exitOption) {
             console.log("Exiting...");
-            process.exit(0);
+            prev();
+            return;
         }
         if (!options.includes(choice)) {
             reject("Invalid input. Try again.");
@@ -32,7 +32,7 @@ match; // 12345
 
 const menu = () => {
     inputControl(
-        "1: START THE QUIZ: LEVEL MODE\n2: START THE QUIZ : INFINITE MODE\n3: EXIT:"
+        "WELCOME TO MATH QUIZ\n1: START THE QUIZ: LEVEL MODE\n2: START THE QUIZ: INFINITE MODE\n3: EXIT"
     )
         .then((choice) => {
             switch (choice) {
@@ -68,7 +68,7 @@ const MathQuestion = {
     },
 };
 
-// TODO parchear divisiones entre 0, numeros decimales e introducir letras
+// TODO parchear divisiones entre 0 y numeros decimales 
 
 const makeQuiz = (difficulty) => {
     let questionObj = Object.create(MathQuestion);
@@ -84,7 +84,7 @@ const makeQuiz = (difficulty) => {
 };
 
 const startLevelQuiz = () => {
-    inputControl("Difficulty level:\n1: EASY\n2: MEDIUM\n3: HARD\n 4:EXIT")
+    inputControl("Difficulty level:\n1: EASY\n2: MEDIUM\n3: HARD\n4:EXIT",4,menu)
         .then((level) => {
             makeQuiz(Math.pow(10, level));
         })
