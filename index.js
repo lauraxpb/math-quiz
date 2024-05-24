@@ -24,15 +24,10 @@ const inputControl = (readableString, exitOption, prev) => {
     });
 };
 
-/*
-const string = "b12345hola";
-const [match] = string.match(/(\d+)/);
-match; // 12345
-*/
 
 const menu = () => {
     inputControl(
-        "WELCOME TO MATH QUIZ\n1: START THE QUIZ: LEVEL MODE\n2: START THE QUIZ: INFINITE MODE\n3: EXIT"
+        "WELCOME TO MATH QUIZ\n1: START THE QUIZ: LEVEL MODE\n2: START THE QUIZ: INFINITE MODE\n3: SHOW RANKINGS\n4: EXIT"
     )
         .then((choice) => {
             switch (choice) {
@@ -42,7 +37,10 @@ const menu = () => {
                 case 2:
                     startInfiniteQuiz();
                     break;
-                case "3":
+                case 3:
+                    showRanking();
+                    break
+                case 4:
                     process.exit(0);
             }
         })
@@ -53,47 +51,41 @@ const menu = () => {
 };
 
 let operators = ["+", "-", "*", "/"];
+const UserRankings = {}
 
 const MathQuestion = {
     generateOperator: function (ops) {
         return ops[Math.floor(Math.random() * ops.length)];
     },
     generateOperand: function (max) {
-        return Math.floor(Math.random() * max);
+        return Math.floor(Math.random() * max +1);
     },
     fullQuestion: function (numSize) {
         let operand1 = this.generateOperand(numSize);
         let operand2 = this.generateOperand(numSize);
         let operator = this.generateOperator(operators);
 
-        // Ensure the operation results in an integer
         operand1 = operator === "/" ? operand1 * operand2 : operand1;
 
         return `${operand1} ${operator} ${operand2}`;
     },
 };
 
-// TODO parchear divisiones entre 0 y numeros decimales
-
 const makeQuiz = (difficulty) => {
-    let answer;
+    let answer, questionObj, question;
     let score = 0;
-
-    while (true) {
-        let questionObj = Object.create(MathQuestion);
-        let question = questionObj.fullQuestion(difficulty);
+    do {
+        questionObj = Object.create(MathQuestion);
+        question = questionObj.fullQuestion(difficulty);
         answer = customPrompt(question);
         if (isNaN(answer)) {
             console.log("Enter a number");
             continue;
         }
-        if (eval(question) !== parseInt(answer)) {
-            break;
-        }
-        question = questionObj.fullQuestion(difficulty);
         score++;
-    }
+    } while (eval(question) === parseInt(answer))
     console.log(`WRONG! Your score was ${score}`);
+    UserRankings[customPrompt('Please enter your name here: ')] = score;  // RANKING DISTINTO PARA CADA MODO DE JUEGO
     menu();
 };
 
@@ -113,11 +105,21 @@ const startLevelQuiz = () => {
 };
 
 const startInfiniteQuiz = () => {
-    for (let i = 1; i < 4; i++) {
-        for (let j = 1; j < 6; j++) {
+    for (let i = 1; i <= 3; i++) {
+        for (let j = 1; j <= 6; j++) {
             makeQuiz(Math.pow(10, i));
         }
     }
 };
+
+const showRanking = () => {
+    let entries = Object.entries(UserRankings);
+    let sorted = entries.sort((a, b) => b[1] - a[1]);
+
+    console.log(sorted);
+    console.log(sorted.join("\n")); // DISTINTAS LINEAS
+
+    menu();
+}
 
 menu();
