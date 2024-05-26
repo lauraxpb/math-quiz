@@ -36,7 +36,6 @@ const menu = () => {
                     startInfiniteQuiz();
                     break;
                 case 3:
-                    inputControl("CHOOSE THE RANKING TYPE:\n1: LEVEL MODE\n2: INFINITE MODE");
                     showRanking();
                     break;
                 case 4:
@@ -50,18 +49,21 @@ const menu = () => {
 };
 
 let operators = ["+", "-", "*", "/"];
-const LevelUserRankings = {
+
+const LevelRankings = {
     easyRanking : {},
     mediumRanking : {},
     hardRanking : {}
 };
-const InfUserRankings = {};
+const InfiniteRankings = {};
 
-const rankingsArray = Object.values(LevelUserRankings);
+const rankingsArray = [LevelRankings,InfiniteRankings]
+
+const levelRankingsArray = Object.values(LevelRankings);
 
 function addPropertyToRanking(index, user, score) {
 try{
-    rankingsArray[index][user] = score;
+    levelRankingsArray[index][user] = score;
     } catch {
         console.log("OUT OF BOUNDS");
     }
@@ -110,7 +112,7 @@ const startInfiniteQuiz = () => {
         }
     }
     console.log(`WRONG! Your score was ${score}`);
-    InfUserRankings[customPrompt("Please enter your name here: ")] = score; // RANKING DISTINTO PARA CADA MODO DE JUEGO
+    InfiniteRankings[customPrompt("Please enter your name here: ")] = score; // RANKING DISTINTO PARA CADA MODO DE JUEGO
     menu();
 };
 
@@ -137,14 +139,26 @@ const startLevelQuiz = () => {
         });
 };
 
-const showRanking = (rankingMode = inputControl("CHOOSE THE RANKING TYPE:\n1: LEVEL MODE\n2: INFINITE MODE")) => {
-    let entries = Object.entries(rankingMode);
-    let sorted = entries.sort((a, b) => b[1] - a[1]);
-
-    console.log(sorted);
-    console.log(sorted.join("\n")); // DISTINTAS LINEAS
-
-    menu();
+const showRanking = () => {
+    inputControl("CHOOSE THE RANKING TYPE:\n1: LEVEL MODE\n2: INFINITE MODE")
+    .then((rankingMode) => {
+        let entries = Object.entries(rankingsArray[rankingMode - 1]);
+        let sorted = entries.sort((a, b) => b[1] - a[1]);
+        sorted.forEach(([ranking, users]) => {
+            if (Array.isArray(users)) {
+                console.log(`${ranking}:`);
+                users.forEach(([user, score]) => {
+                    console.log(`-${user}: ${score}`);
+                });
+            } else {
+                console.log(`-${ranking}: ${users}`);
+            }
+        });
+        menu();
+    })
+    .catch((error) => {
+        console.log(error);
+    });
 };
 
 menu();
