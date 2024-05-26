@@ -8,7 +8,6 @@ const customPrompt = (inputText) => {
 
 const inputControl = (readableString, exitOption, prev) => {
     return new Promise((resolve, reject) => {
-        //console.log(readableString);
         let choice = Number(customPrompt(readableString));
         var options = readableString.match(/\d+/g).map(Number);
 
@@ -24,7 +23,6 @@ const inputControl = (readableString, exitOption, prev) => {
     });
 };
 
-
 const menu = () => {
     inputControl(
         "WELCOME TO MATH QUIZ\n1: START THE QUIZ: LEVEL MODE\n2: START THE QUIZ: INFINITE MODE\n3: SHOW RANKINGS\n4: EXIT"
@@ -38,8 +36,9 @@ const menu = () => {
                     startInfiniteQuiz();
                     break;
                 case 3:
+                    inputControl("CHOOSE THE RANKING TYPE:\n1: LEVEL MODE\n2: INFINITE MODE");
                     showRanking();
-                    break
+                    break;
                 case 4:
                     process.exit(0);
             }
@@ -51,14 +50,29 @@ const menu = () => {
 };
 
 let operators = ["+", "-", "*", "/"];
-const UserRankings = {}
+const LevelUserRankings = {
+    easyRanking : {},
+    mediumRanking : {},
+    hardRanking : {}
+};
+const InfUserRankings = {};
+
+const rankingsArray = Object.values(LevelUserRankings);
+
+function addPropertyToRanking(index, user, score) {
+try{
+    rankingsArray[index][user] = score;
+    } catch {
+        console.log("OUT OF BOUNDS");
+    }
+}
 
 const MathQuestion = {
     generateOperator: function (ops) {
         return ops[Math.floor(Math.random() * ops.length)];
     },
     generateOperand: function (max) {
-        return Math.floor(Math.random() * max +1);
+        return Math.floor(Math.random() * max + 1);
     },
     fullQuestion: function (numSize) {
         let operand1 = this.generateOperand(numSize);
@@ -71,32 +85,51 @@ const MathQuestion = {
     },
 };
 
-const makeQuiz = (difficulty) => {
-    let answer, questionObj, question;
-    let score = 0;
+const evaluateQuestion = (difficulty) => {
+    let answer, questionObj, question, result;
+    questionObj = Object.create(MathQuestion);
+    question = questionObj.fullQuestion(difficulty);
     do {
-        questionObj = Object.create(MathQuestion);
-        question = questionObj.fullQuestion(difficulty);
         answer = customPrompt(question);
-        if (isNaN(answer)) {
-            console.log("Enter a number");
-            continue;
-        }
+    } while (isNaN(answer));
+    result = eval(question) === parseInt(answer);
+    return result;
+};
+
+const startInfiniteQuiz = () => {
+    let score = 0;
+    let difficulty = 1;
+    const questionsPerLevel = 10;
+    let current = 0;
+    while (evaluateQuestion(Math.pow(10, difficulty))) {
         score++;
-    } while (eval(question) === parseInt(answer))
+        current++;
+        if (current === questionsPerLevel) {
+            difficulty++;
+            current = 0;
+        }
+    }
     console.log(`WRONG! Your score was ${score}`);
-    UserRankings[customPrompt('Please enter your name here: ')] = score;  // RANKING DISTINTO PARA CADA MODO DE JUEGO
+    InfUserRankings[customPrompt("Please enter your name here: ")] = score; // RANKING DISTINTO PARA CADA MODO DE JUEGO
     menu();
 };
 
 const startLevelQuiz = () => {
     inputControl(
-        "Difficulty level:\n1: EASY\n2: MEDIUM\n3: HARD\n4:EXIT",
+        "Difficulty level:\n1: EASY\n2: MEDIUM\n3: HARD\n4: EXIT",
         4,
         menu
     )
         .then((level) => {
-            makeQuiz(Math.pow(10, level));
+            const gameLength = 30;
+            let score = 0;
+            while (evaluateQuestion(Math.pow(10, level)) || !gameLength==score){
+                score++
+            }
+            console.log(gameLength==score ? `CONGRATS! YOUR SCORE WAS ${gameLength}` : `WRONG! Your score was ${score}`);
+            
+            addPropertyToRanking(level,[customPrompt("Please enter your name here: ")],score);
+            menu();
         })
         .catch((error) => {
             console.log(error);
@@ -104,22 +137,14 @@ const startLevelQuiz = () => {
         });
 };
 
-const startInfiniteQuiz = () => {
-    for (let i = 1; i <= 3; i++) {
-        for (let j = 1; j <= 6; j++) {
-            makeQuiz(Math.pow(10, i));
-        }
-    }
-};
-
-const showRanking = () => {
-    let entries = Object.entries(UserRankings);
+const showRanking = (rankingMode = inputControl("CHOOSE THE RANKING TYPE:\n1: LEVEL MODE\n2: INFINITE MODE")) => {
+    let entries = Object.entries(rankingMode);
     let sorted = entries.sort((a, b) => b[1] - a[1]);
 
     console.log(sorted);
     console.log(sorted.join("\n")); // DISTINTAS LINEAS
 
     menu();
-}
+};
 
 menu();
