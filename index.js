@@ -46,43 +46,53 @@ const menu = () => {
             console.log(error);
             menu();
         });
-};
+}; // TODO IF YOU PRESS ENTER IT COUNTS AS AN INCORRECT ANSWER
 
 let operators = ["+", "-", "*", "/"];
 
 const LevelRankings = {
-    easyRanking : {},
-    mediumRanking : {},
-    hardRanking : {}
+    easyRanking: {},
+    mediumRanking: {},
+    hardRanking: {},
 };
 const InfiniteRankings = {};
 
-const rankingsArray = [LevelRankings,InfiniteRankings]
+const rankingsArray = [LevelRankings, InfiniteRankings];
 
 const levelRankingsArray = Object.values(LevelRankings);
 
 function addPropertyToRanking(index, user, score) {
-try{
-    levelRankingsArray[index][user] = score;
+    try {
+        levelRankingsArray[index][user] = score;
     } catch {
         console.log("OUT OF BOUNDS");
     }
 }
 
+function multipleOf(a, b) {
+    function gcf(a, b) {
+        return b == 0 ? a : gcf(b, a % b);
+    }
+    return gcf(a, b);
+}
+
+
 const MathQuestion = {
     generateOperator: function (ops) {
         return ops[Math.floor(Math.random() * ops.length)];
     },
-    generateOperand: function (max) {
-        return Math.floor((Math.random() * (max - 1)) + 1);
+    generateOperand: function (min, max) {
+        return Math.floor(Math.random() * (max - min)) + min;
     },
     fullQuestion: function (numSize) {
-        let operand1 = this.generateOperand(numSize);
-        let operand2 = this.generateOperand(numSize);
+        let operand1 = this.generateOperand(0, numSize);
+        let operand2 = this.generateOperand(1, numSize + 1); // Ensure operand2 is never 0 by setting min to 1
         let operator = this.generateOperator(operators);
 
-        operand1 = operator === "/" ? operand1 * operand2 : operand1;
-
+        while ((operand1 % operand2) !== 0 && operator === "/" ) {
+            operand1 = this.generateOperand(1,numSize+1)
+        }
+        
         return `${operand1} ${operator} ${operand2}`;
     },
 };
@@ -98,7 +108,7 @@ const evaluateQuestion = (difficulty) => {
     return result;
 };
 
-const startLevelQuiz = () => {  // ! EASY MODE: 2 FIGURES AFTER A FEW TRIES
+const startLevelQuiz = () => {
     inputControl(
         "Difficulty level:\n1: EASY\n2: MEDIUM\n3: HARD\n4: EXIT",
         4,
@@ -107,12 +117,23 @@ const startLevelQuiz = () => {  // ! EASY MODE: 2 FIGURES AFTER A FEW TRIES
         .then((level) => {
             const gameLength = 30;
             let score = 0;
-            while (evaluateQuestion(Math.pow(10, level)) && gameLength > score){
+            while (
+                evaluateQuestion(Math.pow(10, level)) &&
+                gameLength > score
+            ) {
                 score++;
             }
-            console.log(gameLength==score ? `CONGRATS! YOUR SCORE WAS ${gameLength}` : `WRONG! Your score was ${score}`);
-            
-            addPropertyToRanking(level,[customPrompt("Please enter your name here: ")],score);
+            console.log(
+                gameLength == score
+                    ? `CONGRATS! YOUR SCORE WAS ${gameLength}`
+                    : `WRONG! Your score was ${score}`
+            );
+
+            addPropertyToRanking(
+                level,
+                [customPrompt("Please enter your name here: ")],
+                score
+            );
             menu();
         })
         .catch((error) => {
@@ -125,17 +146,18 @@ const startInfiniteQuiz = () => {
     let score = 0;
     let difficulty = 1;
     const questionsPerLevel = 10;
-    let current = 0;
+    let current = 1;
     while (evaluateQuestion(Math.pow(10, difficulty))) {
         score++;
         current++;
+        console.log(Math.pow(10, difficulty));
         if (current === questionsPerLevel) {
             difficulty++;
-            current = 0;
+            current = 1;
         }
     }
     console.log(`WRONG! Your score was ${score}`);
-    InfiniteRankings[customPrompt("Please enter your name here: ")] = score; // RANKING DISTINTO PARA CADA MODO DE JUEGO
+    InfiniteRankings[customPrompt("Please enter your name here: ")] = score;
     menu();
 };
 
@@ -144,28 +166,28 @@ TODO FIX RANKING:
 ! easyRanking: [object Object]
 ! -mediumRanking: [object Object]
 ! -hardRanking: [object Object]
-*/ 
+*/
 
-const showRanking = () => {  
+const showRanking = () => {
     inputControl("CHOOSE THE RANKING TYPE:\n1: LEVEL MODE\n2: INFINITE MODE")
-    .then((rankingMode) => {
-        let entries = Object.entries(rankingsArray[rankingMode - 1]);
-        let sorted = entries.sort((a, b) => b[1] - a[1]);
-        sorted.forEach(([ranking, users]) => {
-            if (Array.isArray(users)) {
-                console.log(`${ranking}:`);
-                users.forEach(([user, score]) => {
-                    console.log(`-${user}: ${score}`);
-                });
-            } else {
-                console.log(`-${ranking}: ${users}`);
-            }
+        .then((rankingMode) => {
+            let entries = Object.entries(rankingsArray[rankingMode - 1]);
+            let sorted = entries.sort((a, b) => b[1] - a[1]);
+            sorted.forEach(([ranking, users]) => {
+                if (Array.isArray(users)) {
+                    console.log(`${ranking}:`);
+                    users.forEach(([user, score]) => {
+                        console.log(`-${user}: ${score}`);
+                    });
+                } else {
+                    console.log(`-${ranking}: ${users}`);
+                }
+            });
+            menu();
+        })
+        .catch((error) => {
+            console.log(error);
         });
-        menu();
-    })
-    .catch((error) => {
-        console.log(error);
-    });
 };
 
 menu();
