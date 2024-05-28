@@ -74,7 +74,7 @@ const MathQuestion = {
         return ops[Math.floor(Math.random() * ops.length)];
     },
     generateOperand: function (max) {
-        return Math.floor(Math.random() * max + 1);
+        return Math.floor((Math.random() * (max - 1)) + 1);
     },
     fullQuestion: function (numSize) {
         let operand1 = this.generateOperand(numSize);
@@ -98,6 +98,29 @@ const evaluateQuestion = (difficulty) => {
     return result;
 };
 
+const startLevelQuiz = () => {  // ! EASY MODE: 2 FIGURES AFTER A FEW TRIES
+    inputControl(
+        "Difficulty level:\n1: EASY\n2: MEDIUM\n3: HARD\n4: EXIT",
+        4,
+        menu
+    )
+        .then((level) => {
+            const gameLength = 30;
+            let score = 0;
+            while (evaluateQuestion(Math.pow(10, level)) && gameLength > score){
+                score++;
+            }
+            console.log(gameLength==score ? `CONGRATS! YOUR SCORE WAS ${gameLength}` : `WRONG! Your score was ${score}`);
+            
+            addPropertyToRanking(level,[customPrompt("Please enter your name here: ")],score);
+            menu();
+        })
+        .catch((error) => {
+            console.log(error);
+            startLevelQuiz();
+        });
+};
+
 const startInfiniteQuiz = () => {
     let score = 0;
     let difficulty = 1;
@@ -116,30 +139,14 @@ const startInfiniteQuiz = () => {
     menu();
 };
 
-const startLevelQuiz = () => {
-    inputControl(
-        "Difficulty level:\n1: EASY\n2: MEDIUM\n3: HARD\n4: EXIT",
-        4,
-        menu
-    )
-        .then((level) => {
-            const gameLength = 30;
-            let score = 0;
-            while (evaluateQuestion(Math.pow(10, level)) || !gameLength==score){
-                score++
-            }
-            console.log(gameLength==score ? `CONGRATS! YOUR SCORE WAS ${gameLength}` : `WRONG! Your score was ${score}`);
-            
-            addPropertyToRanking(level,[customPrompt("Please enter your name here: ")],score);
-            menu();
-        })
-        .catch((error) => {
-            console.log(error);
-            startLevelQuiz();
-        });
-};
+/*
+TODO FIX RANKING:
+! easyRanking: [object Object]
+! -mediumRanking: [object Object]
+! -hardRanking: [object Object]
+*/ 
 
-const showRanking = () => {
+const showRanking = () => {  
     inputControl("CHOOSE THE RANKING TYPE:\n1: LEVEL MODE\n2: INFINITE MODE")
     .then((rankingMode) => {
         let entries = Object.entries(rankingsArray[rankingMode - 1]);
