@@ -167,11 +167,11 @@ TODO FIX RANKING:
 const showRanking = () => {
     inputControl("CHOOSE THE RANKING TYPE:\n1: LEVEL MODE\n2: INFINITE MODE")
         .then((rankingMode) => {
-            if (Array.isArray(rankingsArray[rankingMode - 1])) {  // compruebo posicion rankingmode-1 es un array ([ ['easy',''], ['med',''], ['hard',''] ])
-                Object.keys(  //cojo las claves del objeto de la siguiente linea
-                    Object.fromEntries(rankingsArray[rankingMode - 1])  //para sacar las claves del objeto paso el array hice con .values otra vez a objeto porque me interesa 'easy', 'med' y 'hard' y no 0,1,2. me devuelve un array de claves
-                ).forEach((key) => { //las recorro para mostrarlas
-                    console.log(`${key}:`);  //muestro las claves del objeto
+            if (Array.isArray(rankingsArray[rankingMode - 1])) {  
+                Object.keys(  
+                    Object.fromEntries(rankingsArray[rankingMode - 1])  
+                ).forEach((key) => { 
+                    console.log(`${key}:`);  
                     displayResult(LevelRankings[key])
                 });
             } else {
@@ -194,21 +194,5 @@ const displayResult = (ranking) => {
         console.log(`-${user}: ${score}`);
     });
 };
-
-/*
-
-const InfiniteRankings = {};
-
-const rankingsArray = [LevelRankings, InfiniteRankings];
-
-const levelRankingsArray = Object.values(LevelRankings);
-
-const LevelRankings = {
-    easyRanking: {},
-    mediumRanking: {},
-    hardRanking: {},
-};
-
-*/
 
 menu();
