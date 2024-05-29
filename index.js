@@ -57,11 +57,11 @@ const LevelRankings = {
 };
 const InfiniteRankings = {};
 
-const rankingsArray = [LevelRankings, InfiniteRankings];
+const levelRankingsArray = Object.entries(LevelRankings);
 
-const levelRankingsArray = Object.values(LevelRankings);
+const rankingsArray = [levelRankingsArray, InfiniteRankings];
 
-function addPropertyToRanking(index, user, score) {
+const addPropertyToRanking = (index, user, score) => {
     try {
         levelRankingsArray[index][user] = score;
     } catch {
@@ -76,7 +76,6 @@ function multipleOf(a, b) {
     return gcf(a, b);
 }
 
-
 const MathQuestion = {
     generateOperator: function (ops) {
         return ops[Math.floor(Math.random() * ops.length)];
@@ -89,10 +88,10 @@ const MathQuestion = {
         let operand2 = this.generateOperand(1, numSize + 1); // Ensure operand2 is never 0 by setting min to 1
         let operator = this.generateOperator(operators);
 
-        while ((operand1 % operand2) !== 0 && operator === "/" ) {
-            operand1 = this.generateOperand(1,numSize+1)
+        while (operand1 % operand2 !== 0 && operator === "/") {
+            operand1 = this.generateOperand(1, numSize + 1);
         }
-        
+
         return `${operand1} ${operator} ${operand2}`;
     },
 };
@@ -128,9 +127,8 @@ const startLevelQuiz = () => {
                     ? `CONGRATS! YOUR SCORE WAS ${gameLength}`
                     : `WRONG! Your score was ${score}`
             );
-
             addPropertyToRanking(
-                level,
+                level - 1,
                 [customPrompt("Please enter your name here: ")],
                 score
             );
@@ -150,7 +148,6 @@ const startInfiniteQuiz = () => {
     while (evaluateQuestion(Math.pow(10, difficulty))) {
         score++;
         current++;
-        console.log(Math.pow(10, difficulty));
         if (current === questionsPerLevel) {
             difficulty++;
             current = 1;
@@ -163,31 +160,53 @@ const startInfiniteQuiz = () => {
 
 /*
 TODO FIX RANKING:
-! easyRanking: [object Object]
-! -mediumRanking: [object Object]
-! -hardRanking: [object Object]
 */
 
 const showRanking = () => {
     inputControl("CHOOSE THE RANKING TYPE:\n1: LEVEL MODE\n2: INFINITE MODE")
         .then((rankingMode) => {
-            let entries = Object.entries(rankingsArray[rankingMode - 1]);
-            let sorted = entries.sort((a, b) => b[1] - a[1]);
-            sorted.forEach(([ranking, users]) => {
-                if (Array.isArray(users)) {
-                    console.log(`${ranking}:`);
-                    users.forEach(([user, score]) => {
-                        console.log(`-${user}: ${score}`);
-                    });
-                } else {
-                    console.log(`-${ranking}: ${users}`);
-                }
-            });
+            if (Array.isArray(rankingsArray[rankingMode - 1])) {  // compruebo posicion rankingmode-1 es un array ([ ['easy',''], ['med',''], ['hard',''] ])
+                Object.keys(  //cojo las claves del objeto de la siguiente linea
+                    Object.fromEntries(rankingsArray[rankingMode - 1])  //para sacar las claves del objeto paso el array hice con .values otra vez a objeto porque me interesa 'easy', 'med' y 'hard' y no 0,1,2. me devuelve un array de claves
+                ).forEach((key) => { //las recorro para mostrarlas
+                    console.log(`${key}:`);  //muestro las claves del objeto
+                    displayResult(rankingMode-1[key])
+                });
+            } else {
+                displayResult(rankingsArray[rankingMode - 1]);
+            }
             menu();
         })
         .catch((error) => {
             console.log(error);
         });
 };
+
+const sortedRanking = (ranking) => {
+    return Object.entries(ranking).sort((a, b) => b[1] - a[1]);
+};
+
+const displayResult = (ranking) => {
+    let sorted = sortedRanking(ranking);
+    sorted.forEach(([user, score]) => {
+        console.log(`-${user}: ${score}`);
+    });
+};
+
+/*
+
+const InfiniteRankings = {};
+
+const rankingsArray = [LevelRankings, InfiniteRankings];
+
+const levelRankingsArray = Object.values(LevelRankings);
+
+const LevelRankings = {
+    easyRanking: {},
+    mediumRanking: {},
+    hardRanking: {},
+};
+
+*/
 
 menu();
