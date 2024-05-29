@@ -61,14 +61,6 @@ const levelRankingsArray = Object.entries(LevelRankings);
 
 const rankingsArray = [levelRankingsArray, InfiniteRankings];
 
-const addPropertyToRanking = (index, user, score) => {
-    try {
-        levelRankingsArray[index][user] = score;
-    } catch {
-        console.log("OUT OF BOUNDS");
-    }
-}
-
 function multipleOf(a, b) {
     function gcf(a, b) {
         return b == 0 ? a : gcf(b, a % b);
@@ -106,6 +98,14 @@ const evaluateQuestion = (difficulty) => {
     result = eval(question) === parseInt(answer);
     return result;
 };
+
+const addPropertyToRanking = (index, user, score) => {
+    try {
+        LevelRankings[levelRankingsArray[index][0]][user] = score;
+    } catch {
+        console.log("OUT OF BOUNDS");
+    }
+}
 
 const startLevelQuiz = () => {
     inputControl(
@@ -160,6 +160,8 @@ const startInfiniteQuiz = () => {
 
 /*
 TODO FIX RANKING:
+    LevelRankings[levelRankingsArray[index][0]][user] = score;
+
 */
 
 const showRanking = () => {
@@ -170,7 +172,7 @@ const showRanking = () => {
                     Object.fromEntries(rankingsArray[rankingMode - 1])  //para sacar las claves del objeto paso el array hice con .values otra vez a objeto porque me interesa 'easy', 'med' y 'hard' y no 0,1,2. me devuelve un array de claves
                 ).forEach((key) => { //las recorro para mostrarlas
                     console.log(`${key}:`);  //muestro las claves del objeto
-                    displayResult(rankingMode-1[key])
+                    displayResult(LevelRankings[key])
                 });
             } else {
                 displayResult(rankingsArray[rankingMode - 1]);
