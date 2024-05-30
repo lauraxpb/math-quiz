@@ -50,16 +50,13 @@ const menu = () => {
 
 let operators = ["+", "-", "*", "/"];
 
-const LevelRankings = {
+const Rankings = {
     easyRanking: {},
     mediumRanking: {},
     hardRanking: {},
+    infiniteRanking: {}
 };
-const InfiniteRankings = {};
-
-const levelRankingsArray = Object.entries(LevelRankings);
-
-const rankingsArray = [levelRankingsArray, InfiniteRankings];
+const rankingsArray = Object.keys(Rankings);
 
 function multipleOf(a, b) {
     function gcf(a, b) {
@@ -101,7 +98,7 @@ const evaluateQuestion = (difficulty) => {
 
 const addPropertyToRanking = (index, user, score) => {
     try {
-        LevelRankings[levelRankingsArray[index][0]][user] = score;
+        Rankings[rankingsArray[index]][user] = score;
     } catch {
         console.log("OUT OF BOUNDS");
     }
@@ -154,29 +151,14 @@ const startInfiniteQuiz = () => {
         }
     }
     console.log(`WRONG! Your score was ${score}`);
-    InfiniteRankings[customPrompt("Please enter your name here: ")] = score;
+    addPropertyToRanking(3,customPrompt("Please enter your name here: "),score)
     menu();
 };
 
-/*
-TODO FIX RANKING:
-    LevelRankings[levelRankingsArray[index][0]][user] = score;
-
-*/
-
 const showRanking = () => {
-    inputControl("CHOOSE THE RANKING TYPE:\n1: LEVEL MODE\n2: INFINITE MODE")
+    inputControl("CHOOSE THE RANKING TYPE:\n1: EASY\n2: MEDIUM\n3: HARD\n4: INFINTE")
         .then((rankingMode) => {
-            if (Array.isArray(rankingsArray[rankingMode - 1])) {  
-                Object.keys(  
-                    Object.fromEntries(rankingsArray[rankingMode - 1])  
-                ).forEach((key) => { 
-                    console.log(`${key}:`);  
-                    displayResult(LevelRankings[key])
-                });
-            } else {
-                displayResult(rankingsArray[rankingMode - 1]);
-            }
+            displayResult(Rankings[rankingsArray[rankingMode-1]])                    
             menu();
         })
         .catch((error) => {
