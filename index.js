@@ -54,7 +54,7 @@ const Rankings = {
     easyRanking: {},
     mediumRanking: {},
     hardRanking: {},
-    infiniteRanking: {}
+    infiniteRanking: {},
 };
 const rankingsArray = Object.keys(Rankings);
 
@@ -96,13 +96,45 @@ const evaluateQuestion = (difficulty) => {
     return result;
 };
 
-const addPropertyToRanking = (index, user, score) => {
-    try {
-        Rankings[rankingsArray[index]][user] = score;
-    } catch {
-        console.log("OUT OF BOUNDS");
-    }
+
+const wantsTimeout = (opt = inputControl("Do you want to add a timer?\n1: YES\n2: NO\n 3: GO BACK")) => {
+    let tOut = opt = 1 ? questionTimeout : evaluateQuestion;
 }
+
+/*
+function withTimeout(promise, timeout) {
+    return new Promise((resolve, reject) => {
+        const timer = setTimeout(() => {
+            reject(new Error('Operation timed out'));
+        }, timeout);
+
+        promise.then(
+            (value) => {
+                clearTimeout(timer);
+                resolve(evaluateQuestion);
+            },
+            (error) => {
+                clearTimeout(timer);
+                reject(error);
+            }
+        );
+    });
+}
+
+const questionTimeout = new Promise((resolve) => {
+    setTimeout(() => {
+        resolve('Completed!');
+    }, 1000); 
+});
+
+withTimeout(wantsTimeout, 4000) 
+    .then((result) => {
+        console.log(result); // "Completed!"
+    })
+    .catch((error) => {
+        console.error(error.message); 
+    });
+*/
 
 const startLevelQuiz = () => {
     inputControl(
@@ -151,19 +183,33 @@ const startInfiniteQuiz = () => {
         }
     }
     console.log(`WRONG! Your score was ${score}`);
-    addPropertyToRanking(3,customPrompt("Please enter your name here: "),score)
+    addPropertyToRanking(
+        3,
+        customPrompt("Please enter your name here: "),
+        score
+    );
     menu();
 };
 
 const showRanking = () => {
-    inputControl("CHOOSE THE RANKING TYPE:\n1: EASY\n2: MEDIUM\n3: HARD\n4: INFINTE")
+    inputControl(
+        "CHOOSE THE RANKING TYPE:\n1: EASY\n2: MEDIUM\n3: HARD\n4: INFINTE"
+    )
         .then((rankingMode) => {
-            displayResult(Rankings[rankingsArray[rankingMode-1]])                    
+            displayResult(Rankings[rankingsArray[rankingMode - 1]]);
             menu();
         })
         .catch((error) => {
             console.log(error);
         });
+};
+
+const addPropertyToRanking = (index, user, score) => {
+    try {
+        Rankings[rankingsArray[index]][user] = score;
+    } catch {
+        console.log("OUT OF BOUNDS");
+    }
 };
 
 const sortedRanking = (ranking) => {
