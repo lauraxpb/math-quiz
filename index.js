@@ -58,13 +58,6 @@ const Rankings = {
 };
 const rankingsArray = Object.keys(Rankings);
 
-function multipleOf(a, b) {
-    function gcf(a, b) {
-        return b == 0 ? a : gcf(b, a % b);
-    }
-    return gcf(a, b);
-}
-
 const MathQuestion = {
     generateOperator: function (ops) {
         return ops[Math.floor(Math.random() * ops.length)];
@@ -86,55 +79,47 @@ const MathQuestion = {
 };
 
 const evaluateQuestion = (difficulty) => {
-    let answer, questionObj, question, result;
-    questionObj = Object.create(MathQuestion);
-    question = questionObj.fullQuestion(difficulty);
-    do {
-        answer = customPrompt(question);
-    } while (isNaN(answer));
-    result = eval(question) === parseInt(answer);
-    return result;
-};
+    // ! JUST ONE QUESTION
+    return new Promise(resolve,reject)
+        let answer, questionObj, question, result;
+        questionObj = Object.create(MathQuestion);
+        question = questionObj.fullQuestion(difficulty);
+        do {
+            answer = customPrompt(question); //keeps showing the question if the user enters a letter or something that is not valid
+        } while (isNaN(answer));
+        result = eval(question) === parseInt(answer);
+        return result; //! boolean that returns true if the answer is correct  ///////////////RESOLVE
+    }
 
+function answerInTime(timeout, callback) {
+        return new Promise((resolve, reject) => {
+            const timer = setTimeout(() => {
+                reject(new Error(`Promise timed out after ${timeout} ms`));
+            }, timeout);
+                callback(
+                (value) => {
+                    clearTimeout(timer);
+                    resolve(value);
+                },
+                (error) => {
+                    clearTimeout(timer);
+                    reject(error);
+                }
+            );
+        });
+    }
 
-const wantsTimeout = (opt = inputControl("Do you want to add a timer?\n1: YES\n2: NO\n 3: GO BACK")) => {
-    let tOut = opt = 1 ? questionTimeout : evaluateQuestion;
-}
-
-/*
-function withTimeout(promise, timeout) {
-    return new Promise((resolve, reject) => {
-        const timer = setTimeout(() => {
-            reject(new Error('Operation timed out'));
-        }, timeout);
-
-        promise.then(
-            (value) => {
-                clearTimeout(timer);
-                resolve(evaluateQuestion);
-            },
-            (error) => {
-                clearTimeout(timer);
-                reject(error);
-            }
-        );
-    });
-}
-
-const questionTimeout = new Promise((resolve) => {
-    setTimeout(() => {
-        resolve('Completed!');
-    }, 1000); 
-});
-
-withTimeout(wantsTimeout, 4000) 
-    .then((result) => {
-        console.log(result); // "Completed!"
+const withTimeout = (level) => {
+    inputControl("Do you want to add timeout?\n1: YES\n2: NO\n3: EXIT",
+        3,
+        menu
+    )
+    .then((timeout) =>{
+        timeout == 1
+        ? answerInTime(10000, evaluateQuestion(Math.pow(10, level)))
+        : evaluateQuestion((Math.pow(10, level)))
     })
-    .catch((error) => {
-        console.error(error.message); 
-    });
-*/
+}
 
 const startLevelQuiz = () => {
     inputControl(
@@ -145,8 +130,10 @@ const startLevelQuiz = () => {
         .then((level) => {
             const gameLength = 30;
             let score = 0;
+            evaluateQuestion(Math.pow(10, level)).then((answered) => {return answered})
             while (
-                evaluateQuestion(Math.pow(10, level)) &&
+                answered
+                &&
                 gameLength > score
             ) {
                 score++;
